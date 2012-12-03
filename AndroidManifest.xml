@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+      package="wamd.main"
+      android:versionCode="1"
+      android:versionName="1.61"
+	  android:installLocation="internalOnly">
+    <application android:label="@string/app_name" android:icon="@drawable/ic_launcher" android:debuggable="true">
+        <activity android:name="wamd.ui.WaMdActivity" android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+		<service android:enabled="true" android:name="WaMd">
+			<intent-filter>
+					<action android:name="WaMd" />
+			</intent-filter>
+		</service>
+		<receiver android:name="wamd.receivers.StartAtBootServiceReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <category android:name="android.intent.category.HOME" />
+            </intent-filter>
+        </receiver>
+    </application>
+	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+	<uses-permission android:name="android.permission.READ_PHONE_STATE" />
+	<uses-permission android:name="android.permission.WRITE_SETTINGS" />
+	<uses-permission android:name="android.permission.INTERNET" />
+</manifest>
