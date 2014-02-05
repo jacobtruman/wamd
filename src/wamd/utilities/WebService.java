@@ -82,7 +82,8 @@ public class WebService {
         Log.i(TAG, "BEARING: " + location.getBearing());
         Log.i(TAG, "LAT: " + location.getLatitude());
         Log.i(TAG, "LON: " + location.getLongitude());
-        // build data array
+	    _wamd.ChangeDisplayText("LAT: " + location.getLatitude() + "\nLON: " + location.getLongitude());
+	    // build data array
         this._postValues.add(new BasicNameValuePair("client_id", this._getMyPhoneNumber()));
         this._postValues.add(new BasicNameValuePair("device_id", this._getDeviceId()));
         this._postValues.add(new BasicNameValuePair("lat", String.valueOf(location.getLatitude())));

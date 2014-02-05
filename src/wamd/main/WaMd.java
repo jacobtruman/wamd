@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.location.LocationManager;
+import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -22,89 +23,117 @@ import wamd.listeners.MyLocationListener;
  * @author Jacob Truman <jacob.truman@gmail.com>
  */
 public class WaMd extends Service {
-    private String TAG = "WaMd.main";
-    private int _waitTime = 300000; // 5 min
-    private int _minDist = 0;
-    private int _startId;
-    private LocationManager _locationManager;
-    private MyLocationListener[] locationListeners;
+	private String TAG = "WaMd.main";
+	private int _waitTime = 300000; // 5 min
+	private int _minDist = 0;
+	private int _startId;
+	private LocationManager _locationManager;
+	private MyLocationListener[] locationListeners;
+	public static final String BROADCAST_ACTION = "wamd.displayevent";
+	private final Handler handler = new Handler();
+	private String[] _providers = {LocationManager.NETWORK_PROVIDER, LocationManager.GPS_PROVIDER};
+	Intent intent;
+	int counter = 0;
 
-    //@Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
+	//@Override
+	public IBinder onBind(Intent intent) {
+		return null;
+	}
 
-    @Override
-    public void onCreate() {
-        Log.i(TAG, "WAIT TIME: " + (this._waitTime / 60000) + " min");
-        this.locationListeners = new MyLocationListener[] {
-                new MyLocationListener(this, LocationManager.GPS_PROVIDER),
-                new MyLocationListener(this, LocationManager.NETWORK_PROVIDER)
-        };
-        this._initializeLocationManager();
-        try {
-            this._locationManager.requestLocationUpdates(
-                    LocationManager.NETWORK_PROVIDER, this._waitTime, this._minDist,
-                    locationListeners[1]);
-        } catch (java.lang.SecurityException ex) {
-            Log.i(TAG, "fail to request location update, ignore", ex);
-        } catch (IllegalArgumentException ex) {
-            Log.d(TAG, "network provider does not exist, " + ex.getMessage());
-        }
-        try {
-            this._locationManager.requestLocationUpdates(
-                    LocationManager.GPS_PROVIDER, this._waitTime, this._minDist,
-                    locationListeners[0]);
-        } catch (java.lang.SecurityException ex) {
-            Log.i(TAG, "fail to request location update, ignore", ex);
-        } catch (IllegalArgumentException ex) {
-            Log.d(TAG, "gps provider does not exist " + ex.getMessage());
-        }
-        String versionName = "";
-        try {
-            versionName = this.getPackageManager().getPackageInfo(this.getPackageName(), 0).versionName;
-        } catch (NameNotFoundException ex) {
-            Logger.getLogger(WaMd.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        Log.i(TAG, "WAMD VERSION: " + versionName);
+	@Override
+	public void onCreate() {
+		Log.i(TAG, "WAIT TIME: " + (this._waitTime / 60000) + " min");
+		this.locationListeners = new MyLocationListener[]{
+				new MyLocationListener(this, this._providers[0]),
+				new MyLocationListener(this, this._providers[1])
+		};
+		this._initializeLocationManager();
+		try {
+			this._locationManager.requestLocationUpdates(
+					LocationManager.NETWORK_PROVIDER, this._waitTime, this._minDist,
+					locationListeners[1]);
+		} catch (java.lang.SecurityException ex) {
+			Log.i(TAG, "fail to request location update, ignore", ex);
+		} catch (IllegalArgumentException ex) {
+			Log.d(TAG, "network provider does not exist, " + ex.getMessage());
+		}
+		try {
+			this._locationManager.requestLocationUpdates(
+					LocationManager.GPS_PROVIDER, this._waitTime, this._minDist,
+					locationListeners[0]);
+		} catch (java.lang.SecurityException ex) {
+			Log.i(TAG, "fail to request location update, ignore", ex);
+		} catch (IllegalArgumentException ex) {
+			Log.d(TAG, "gps provider does not exist " + ex.getMessage());
+		}
+		String versionName = "";
+		try {
+			versionName = this.getPackageManager().getPackageInfo(this.getPackageName(), 0).versionName;
+		} catch (NameNotFoundException ex) {
+			Logger.getLogger(WaMd.class.getName()).log(Level.SEVERE, null, ex);
+		}
+		Log.i(TAG, "WAMD VERSION: " + versionName);
 
-        super.onCreate();
-    }
+		super.onCreate();
+		intent = new Intent(BROADCAST_ACTION);
+	}
 
-    // Use the LocationManager class to obtain GPS locations
-    private void _initializeLocationManager() {
-        Log.e(TAG, "initializeLocationManager");
-        if (this._locationManager == null) {
-            this._locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
-        }
-    }
+	// Use the LocationManager class to obtain GPS locations
+	private void _initializeLocationManager() {
+		Log.i(TAG, "initializeLocationManager");
+		if (this._locationManager == null) {
+			this._locationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+		}
+	}
 
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        this._startId = startId;
-        return Service.START_STICKY;
-    }
+	public void ChangeDisplayText(String text) {
+		if(text.length() == 0) {
+			text = "Still Loading...";
+		}
+		Log.d(TAG, "entered ChangeDisplayText");
 
-    public void updateWaitTime(int newTime) {
-        if (this._waitTime != newTime) {
-            this._waitTime = newTime;
-            Log.i(TAG, "WAIT TIME: " + (this._waitTime / 60000) + " min");
-            Log.i(TAG, "WAIT TIME: " + this._waitTime + " sec");
-            this.locationListeners[0].updateWaitTime(newTime);
-            this.locationListeners[1].updateWaitTime(newTime);
-            this._restartService();
-        }
-    }
+		intent.putExtra("coords", text);
+		sendBroadcast(intent);
+	}
 
-    private void _restartService() {
-        Log.i(TAG, "RESTARTING SERVICE");
-        this._locationManager.removeUpdates(this.locationListeners[0]);
-        this._locationManager.removeUpdates(this.locationListeners[1]);
-        this._locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, this._waitTime, this._minDist, this.locationListeners[0]);
-        this._locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, this._waitTime, this._minDist, this.locationListeners[1]);
-    }
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		this._startId = startId;
 
-    public void stopService() {
-        this.stopSelfResult(this._startId);
-    }
+		handler.removeCallbacks(sendUpdatesToUI);
+		handler.postDelayed(sendUpdatesToUI, 1000); // 1 second
+
+		return Service.START_STICKY;
+	}
+
+	private Runnable sendUpdatesToUI = new Runnable() {
+		public void run() {
+			ChangeDisplayText("");
+			handler.postDelayed(this, 5000); // 5 seconds
+		}
+	};
+
+	public void updateWaitTime(int newTime) {
+		if (this._waitTime != newTime) {
+			this._waitTime = newTime;
+			Log.i(TAG, "WAIT TIME: " + (this._waitTime / 60000) + " min");
+			Log.i(TAG, "WAIT TIME: " + this._waitTime + " sec");
+			for (int i = 0; i < this.locationListeners.length; i++) {
+				this.locationListeners[i].updateWaitTime(newTime);
+			}
+			this._restartService();
+		}
+	}
+
+	private void _restartService() {
+		Log.i(TAG, "RESTARTING SERVICE");
+		for (int i = 0; i < this._providers.length; i++) {
+			this._locationManager.removeUpdates(this.locationListeners[i]);
+			this._locationManager.requestLocationUpdates(this._providers[i], this._waitTime, this._minDist, this.locationListeners[i]);
+		}
+	}
+
+	public void stopService() {
+		this.stopSelfResult(this._startId);
+	}
 }
