@@ -7,12 +7,29 @@
     <TextView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:paddingBottom="50px"
+            android:paddingTop="20px"
+            android:paddingBottom="10px"
             android:gravity="center|top"
-            android:text="WaMd"
+            android:text="GPS:"
             />
     <TextView
-            android:id="@+id/coords"
+            android:id="@+id/coords_gps"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="30px"
+            android:gravity="center"
+            android:text="Loading..."
+            />
+    <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="20px"
+            android:paddingBottom="10px"
+            android:gravity="center|top"
+            android:text="Network:"
+            />
+    <TextView
+            android:id="@+id/coords_network"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:gravity="center"

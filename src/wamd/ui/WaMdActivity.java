@@ -19,6 +19,8 @@ import wamd.main.WaMd;
 public class WaMdActivity extends Activity {
 	private Intent intent;
 	private String TAG = "WaMdActivity";
+	private String[] textViews = {"coords_gps", "coords_network"};
+	private int[] textViewInts = {R.id.coords_gps, R.id.coords_network};
 
 	// Called when the activity is first created
 	@Override
@@ -77,10 +79,17 @@ public class WaMdActivity extends Activity {
 	}
 
 	private void updateUI(Intent intent) {
-		String coords = intent.getStringExtra("coords");
-		Log.d(TAG, coords);
+		String textValue;
+		TextView txtView;
+		for(int i = 0; i < this.textViews.length; i++) {
+			Log.d(TAG, "Trying to update '" + this.textViews[i] + "' TextView");
+			textValue = intent.getStringExtra(this.textViews[i]);
+			if(textValue != null) {
+				Log.d(TAG, textValue);
 
-		TextView txtCoords = (TextView) findViewById(R.id.coords);
-		txtCoords.setText(coords);
+				txtView = (TextView) findViewById(this.textViewInts[i]);
+				txtView.setText(textValue);
+			}
+		}
 	}
 }

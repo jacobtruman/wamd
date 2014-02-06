@@ -23,7 +23,7 @@ import wamd.listeners.MyLocationListener;
  * @author Jacob Truman <jacob.truman@gmail.com>
  */
 public class WaMd extends Service {
-	private String TAG = "WaMd.main";
+	private String TAG = "WaMdMain";
 	private int _waitTime = 300000; // 5 min
 	private int _minDist = 0;
 	private int _startId;
@@ -86,14 +86,14 @@ public class WaMd extends Service {
 		}
 	}
 
-	public void ChangeDisplayText(String text) {
-		if(text.length() == 0) {
-			text = "Still Loading...";
-		}
-		Log.d(TAG, "entered ChangeDisplayText");
+	public void ChangeDisplayText(String text, String tvid) {
+		if(text.length() > 0) {
+			Log.d(TAG, "Extra ID: " + tvid);
+			Log.d(TAG, "Text: " + text);
 
-		intent.putExtra("coords", text);
-		sendBroadcast(intent);
+			intent.putExtra(tvid, text);
+			sendBroadcast(intent);
+		}
 	}
 
 	@Override
@@ -108,7 +108,7 @@ public class WaMd extends Service {
 
 	private Runnable sendUpdatesToUI = new Runnable() {
 		public void run() {
-			ChangeDisplayText("");
+			//ChangeDisplayText("");
 			handler.postDelayed(this, 5000); // 5 seconds
 		}
 	};
