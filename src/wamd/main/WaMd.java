@@ -25,15 +25,15 @@ import wamd.listeners.MyLocationListener;
 public class WaMd extends Service {
 	private String TAG = "WaMdMain";
 	private int _waitTime = 300000; // 5 min
+	//private int _waitTime = 60; // 10 seconds
 	private int _minDist = 0;
 	private int _startId;
 	private LocationManager _locationManager;
-	private MyLocationListener[] locationListeners;
+	private MyLocationListener locationListener;
 	public static final String BROADCAST_ACTION = "wamd.displayevent";
 	private final Handler handler = new Handler();
 	private String[] _providers = {LocationManager.NETWORK_PROVIDER, LocationManager.GPS_PROVIDER};
 	Intent intent;
-	int counter = 0;
 
 	//@Override
 	public IBinder onBind(Intent intent) {
@@ -43,29 +43,22 @@ public class WaMd extends Service {
 	@Override
 	public void onCreate() {
 		Log.i(TAG, "WAIT TIME: " + (this._waitTime / 60000) + " min");
-		this.locationListeners = new MyLocationListener[]{
-				new MyLocationListener(this, this._providers[0]),
-				new MyLocationListener(this, this._providers[1])
-		};
+		this.locationListener = new MyLocationListener(this);
 		this._initializeLocationManager();
-		try {
-			this._locationManager.requestLocationUpdates(
-					LocationManager.NETWORK_PROVIDER, this._waitTime, this._minDist,
-					locationListeners[1]);
-		} catch (java.lang.SecurityException ex) {
-			Log.i(TAG, "fail to request location update, ignore", ex);
-		} catch (IllegalArgumentException ex) {
-			Log.d(TAG, "network provider does not exist, " + ex.getMessage());
+
+		for(int i = 0; i < this._providers.length; i++) {
+			try {
+				this._locationManager.requestLocationUpdates(
+						this._providers[i], this._waitTime, this._minDist,
+						this.locationListener);
+						//this.locationListeners[i]);
+			} catch (java.lang.SecurityException ex) {
+				Log.i(TAG, "fail to request location update, ignore", ex);
+			} catch (IllegalArgumentException ex) {
+				Log.d(TAG, this._providers[i] + " provider does not exist, " + ex.getMessage());
+			}
 		}
-		try {
-			this._locationManager.requestLocationUpdates(
-					LocationManager.GPS_PROVIDER, this._waitTime, this._minDist,
-					locationListeners[0]);
-		} catch (java.lang.SecurityException ex) {
-			Log.i(TAG, "fail to request location update, ignore", ex);
-		} catch (IllegalArgumentException ex) {
-			Log.d(TAG, "gps provider does not exist " + ex.getMessage());
-		}
+
 		String versionName = "";
 		try {
 			versionName = this.getPackageManager().getPackageInfo(this.getPackageName(), 0).versionName;
@@ -108,7 +101,6 @@ public class WaMd extends Service {
 
 	private Runnable sendUpdatesToUI = new Runnable() {
 		public void run() {
-			//ChangeDisplayText("");
 			handler.postDelayed(this, 5000); // 5 seconds
 		}
 	};
@@ -118,22 +110,32 @@ public class WaMd extends Service {
 			this._waitTime = newTime;
 			Log.i(TAG, "WAIT TIME: " + (this._waitTime / 60000) + " min");
 			Log.i(TAG, "WAIT TIME: " + this._waitTime + " sec");
-			for (int i = 0; i < this.locationListeners.length; i++) {
-				this.locationListeners[i].updateWaitTime(newTime);
-			}
+			this.locationListener.updateWaitTime(newTime);
 			this._restartService();
 		}
 	}
 
 	private void _restartService() {
 		Log.i(TAG, "RESTARTING SERVICE");
+		this._locationManager.removeUpdates(this.locationListener);
 		for (int i = 0; i < this._providers.length; i++) {
-			this._locationManager.removeUpdates(this.locationListeners[i]);
-			this._locationManager.requestLocationUpdates(this._providers[i], this._waitTime, this._minDist, this.locationListeners[i]);
+			this._locationManager.requestLocationUpdates(this._providers[i], this._waitTime, this._minDist, this.locationListener);
 		}
 	}
 
 	public void stopService() {
 		this.stopSelfResult(this._startId);
+	}
+
+	public int getWaitTime() {
+		return this._waitTime;
+	}
+
+	public void setWaitTime(int val) {
+		this._waitTime = val;
+	}
+
+	public String[] getProviders() {
+		return this._providers;
 	}
 }

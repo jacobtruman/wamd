@@ -1,5 +1,8 @@
 package wamd.ui;
 
+import wamd.main.R;
+import wamd.main.WaMd;
+
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -8,13 +11,9 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
-import wamd.main.R;
-import wamd.main.WaMd;
-
-//import android.widget.TextView;
-//import android.widget.LinearLayout;
-//import android.view.Gravity;
-//import android.view.ViewGroup.LayoutParams;
+import android.widget.LinearLayout;
+import android.view.Gravity;
+import android.view.ViewGroup.LayoutParams;
 
 public class WaMdActivity extends Activity {
 	private Intent intent;
@@ -28,32 +27,8 @@ public class WaMdActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 
-		intent = new Intent(this, WaMd.class);
-/*
-	    TextView tv1 = new TextView(this);
-	    tv1.setText("WaMd");
-	    tv1.setTextSize(30);
-	    tv1.setGravity(Gravity.CENTER);
-	    TextView tv2 = new TextView(this);
-	    tv2.setTextSize(20);
-	    tv2.setGravity(Gravity.CENTER);
-	    tv2.setText("Loading...");
-	    TextView tv3 = new TextView(this);
-	    tv3.setTextSize(10);
-	    tv3.setGravity(Gravity.CENTER);
-	    tv3.setText("Author: Jacob Truman");
-	    LinearLayout ll = new LinearLayout(this);
-	    ll.setOrientation(LinearLayout.VERTICAL);
-	    ll.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-	    ll.setGravity(Gravity.CENTER);
-	    ll.addView(tv1);
-	    ll.addView(tv2);
-	    ll.addView(tv3);
-	    setContentView(ll);
-*/
 		// start the service
-		Intent intent = new Intent(this, WaMd.class);
-		//intent.putExtra("_waitTime", 100000);
+		intent = new Intent(this, WaMd.class);
 		startService(intent);
 	}
 
@@ -91,5 +66,28 @@ public class WaMdActivity extends Activity {
 				txtView.setText(textValue);
 			}
 		}
+	}
+
+	private void buildUI() {
+		TextView tv1 = new TextView(this);
+		tv1.setText("WaMd");
+		tv1.setTextSize(30);
+		tv1.setGravity(Gravity.CENTER);
+		TextView tv2 = new TextView(this);
+		tv2.setTextSize(20);
+		tv2.setGravity(Gravity.CENTER);
+		tv2.setText("Loading...");
+		TextView tv3 = new TextView(this);
+		tv3.setTextSize(10);
+		tv3.setGravity(Gravity.CENTER);
+		tv3.setText("Author: Jacob Truman");
+		LinearLayout ll = new LinearLayout(this);
+		ll.setOrientation(LinearLayout.VERTICAL);
+		ll.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+		ll.setGravity(Gravity.CENTER);
+		ll.addView(tv1);
+		ll.addView(tv2);
+		ll.addView(tv3);
+		setContentView(ll);
 	}
 }
