@@ -12,6 +12,9 @@ import android.widget.Toast;
 import wamd.main.WaMd;
 import wamd.utilities.WebService;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * @author Jacob Truman <jacob.truman@gmail.com>
  */
@@ -19,14 +22,18 @@ public class MyLocationListener implements LocationListener {
     private Context _Context;
     private WaMd _wamd;
     private WebService _ws;
-    private long _prevTime = 0;
-    private int _waitTime = 300000;
+	private long[] _prevTime;
     private String TAG = "WaMd.MyLocationListener";
     private Location _lastLocation;
+	private String[] _providers;
+	private List<String> _providerList;
 
-    public MyLocationListener(WaMd wamd, String provider) {
-        this._lastLocation = new Location(provider);
+    public MyLocationListener(WaMd wamd) {
         this._wamd = wamd;
+	    this._providers = this._wamd.getProviders();
+	    this._providerList = Arrays.asList(this._providers);
+	    // initialize previous time for each provider
+	    this._prevTime = new long[this._providers.length];
         this._Context = wamd.getApplicationContext();
         this._ws = new WebService(this._wamd);
         Log.i(TAG, "Init");
@@ -34,30 +41,35 @@ public class MyLocationListener implements LocationListener {
 
     @Override
     public void onLocationChanged(Location loc) {
+	    // get the provider index
+	    int index = this._providerList.indexOf(loc.getProvider());
+
         // get the time of the location change
         long time = loc.getTime();
         // get the difference between now and the time of the previous uploaded location
-        long diff = time - this._prevTime;
-        if (this._prevTime == 0 || diff > this._waitTime) {
-            Log.i(TAG, "SENDING COORDS");
-            // update the previous uploaded location time
-            this._prevTime = time;
+        long diff = time - this._prevTime[index];
 
+        if (this._prevTime[index] == 0 || diff > this._wamd.getWaitTime()) {
+            Log.i(TAG, "SENDING COORDS FROM PROVIDER: " + loc.getProvider());
+            // update the previous uploaded location time
+            this._prevTime[index] = time;
+
+	        this._lastLocation = loc;
             this._ws.postData(loc);
         } else {
-            Log.i(TAG, "NOT READY: " + diff + " < " + this._waitTime);
+            Log.i(TAG, "NOT READY: " + diff + " < " + this._wamd.getWaitTime());
         }
     }
 
     @Override
     public void onProviderDisabled(String provider) {
-        Toast.makeText(this._Context.getApplicationContext(), "GPS Disabled", Toast.LENGTH_SHORT).show();
-        this.turnGPSOn();
+        Toast.makeText(this._Context.getApplicationContext(), provider + " Disabled", Toast.LENGTH_SHORT).show();
+        //this.turnGPSOn();
     }
 
     @Override
     public void onProviderEnabled(String provider) {
-        Toast.makeText(this._Context.getApplicationContext(), "GPS Enabled", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this._Context.getApplicationContext(), provider + " Enabled", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -100,10 +112,18 @@ public class MyLocationListener implements LocationListener {
     }
 
     public void updateWaitTime(int newTime) {
-        if (this._waitTime != newTime) {
-            this._waitTime = newTime;
-            Log.i(TAG, "WAIT TIME: " + (this._waitTime / 60000) + " min");
-            Log.i(TAG, "WAIT TIME: " + this._waitTime + " sec");
+        if (this._wamd.getWaitTime() != newTime) {
+            this._wamd.setWaitTime(newTime);
+            Log.i(TAG, "WAIT TIME: " + (this._wamd.getWaitTime() / 60000) + " min");
+            Log.i(TAG, "WAIT TIME: " + this._wamd.getWaitTime() + " sec");
         }
     }
+
+	public Location getLastLocation() {
+		return this._lastLocation;
+	}
+
+	/*public String getProvider() {
+		return this._provider;
+	}*/
 }
