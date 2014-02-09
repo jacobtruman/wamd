@@ -95,15 +95,12 @@ public class WebService {
 		Log.i(TAG, "LON: " + location.getLongitude());
 		Log.i(TAG, "DATE/TIME: " + DateFormat.format("yyyy-MM-dd kk:mm:ss", location.getTime()));
 
-		// update the UI
-		this._wamd.ChangeDisplayText("LAT: " + location.getLatitude() + "\nLON: " + location.getLongitude(), "coords_" + location.getProvider());
-
 		// Are we charging / charged?
 		this._chargingStatus = this._batteryStatus.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
 		this._isCharging = this._chargingStatus == BatteryManager.BATTERY_STATUS_CHARGING ||
 				this._chargingStatus == BatteryManager.BATTERY_STATUS_FULL;
 
-		if(this._isCharging) {
+		if (this._isCharging) {
 			// How are we charging?
 			this._chargePlug = this._batteryStatus.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
 			//boolean usbCharge = this._chargePlug == BatteryManager.BATTERY_PLUGGED_USB;
@@ -178,6 +175,9 @@ public class WebService {
 			this._dbHelper.addCoords(this._postValues);
 			this._dbValues = true;
 		}
+
+		// update the UI
+		this._wamd.ChangeDisplayText("LAT: " + location.getLatitude() + "\nLON: " + location.getLongitude(), "coords_" + location.getProvider());
 	}
 
 	private String _getDeviceId() {

@@ -46,12 +46,12 @@ public class WaMd extends Service {
 		this.locationListener = new MyLocationListener(this);
 		this._initializeLocationManager();
 
-		for(int i = 0; i < this._providers.length; i++) {
+		for (int i = 0; i < this._providers.length; i++) {
 			try {
 				this._locationManager.requestLocationUpdates(
 						this._providers[i], this._waitTime, this._minDist,
 						this.locationListener);
-						//this.locationListeners[i]);
+				//this.locationListeners[i]);
 			} catch (java.lang.SecurityException ex) {
 				Log.i(TAG, "fail to request location update, ignore", ex);
 			} catch (IllegalArgumentException ex) {
@@ -80,7 +80,7 @@ public class WaMd extends Service {
 	}
 
 	public void ChangeDisplayText(String text, String tvid) {
-		if(text.length() > 0) {
+		if (text.length() > 0) {
 			Log.d(TAG, "Extra ID: " + tvid);
 			Log.d(TAG, "Text: " + text);
 

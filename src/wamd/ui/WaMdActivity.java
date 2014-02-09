@@ -56,10 +56,10 @@ public class WaMdActivity extends Activity {
 	private void updateUI(Intent intent) {
 		String textValue;
 		TextView txtView;
-		for(int i = 0; i < this.textViews.length; i++) {
+		for (int i = 0; i < this.textViews.length; i++) {
 			Log.d(TAG, "Trying to update '" + this.textViews[i] + "' TextView");
 			textValue = intent.getStringExtra(this.textViews[i]);
-			if(textValue != null) {
+			if (textValue != null) {
 				Log.d(TAG, textValue);
 
 				txtView = (TextView) findViewById(this.textViewInts[i]);
