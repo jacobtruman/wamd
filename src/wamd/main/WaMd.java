@@ -48,8 +48,9 @@ public class WaMd extends Service {
 
 		for (int i = 0; i < this._providers.length; i++) {
 			try {
+				// create a location update requester. Add some time to the wait time, for buffer
 				this._locationManager.requestLocationUpdates(
-						this._providers[i], this._waitTime, this._minDist,
+						this._providers[i], this._waitTime + 100, this._minDist,
 						this.locationListener);
 				//this.locationListeners[i]);
 			} catch (java.lang.SecurityException ex) {
