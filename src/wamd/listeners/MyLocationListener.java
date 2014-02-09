@@ -49,7 +49,7 @@ public class MyLocationListener implements LocationListener {
 		// get the difference between now and the time of the previous uploaded location
 		long diff = time - this._prevTime[index];
 
-		if (this._prevTime[index] == 0 || diff > this._wamd.getWaitTime()) {
+		if (this._prevTime[index] == 0 || diff >= this._wamd.getWaitTime()) {
 			Log.i(TAG, "SENDING COORDS FROM PROVIDER: " + loc.getProvider());
 			// update the previous uploaded location time
 			this._prevTime[index] = time;
