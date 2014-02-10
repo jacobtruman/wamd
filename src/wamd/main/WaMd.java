@@ -48,10 +48,7 @@ public class WaMd extends Service {
 
 		for (int i = 0; i < this._providers.length; i++) {
 			try {
-				this._locationManager.requestLocationUpdates(
-						this._providers[i], this._waitTime, this._minDist,
-						this.locationListener);
-				//this.locationListeners[i]);
+				this.addUpdates(this._providers[i]);
 			} catch (java.lang.SecurityException ex) {
 				Log.i(TAG, "fail to request location update, ignore", ex);
 			} catch (IllegalArgumentException ex) {
@@ -125,6 +122,12 @@ public class WaMd extends Service {
 
 	public void stopService() {
 		this.stopSelfResult(this._startId);
+	}
+
+	public void addUpdates(String provider) {
+		this._locationManager.requestLocationUpdates(
+				provider, this._waitTime, this._minDist,
+				this.locationListener);
 	}
 
 	public int getWaitTime() {
