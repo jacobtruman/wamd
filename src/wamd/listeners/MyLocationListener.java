@@ -1,12 +1,9 @@
 package wamd.listeners;
 
 import android.content.Context;
-import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
 import wamd.main.WaMd;
@@ -64,7 +61,6 @@ public class MyLocationListener implements LocationListener {
 	@Override
 	public void onProviderDisabled(String provider) {
 		Toast.makeText(this._Context.getApplicationContext(), provider + " Disabled", Toast.LENGTH_SHORT).show();
-		//this.turnGPSOn();
 	}
 
 	@Override
@@ -75,40 +71,6 @@ public class MyLocationListener implements LocationListener {
 	@Override
 	public void onStatusChanged(String provider, int status, Bundle extras) {
 
-	}
-
-	private void turnGPSOn() {
-		Toast.makeText(this._Context.getApplicationContext(), "Attempting to enable GPS", Toast.LENGTH_SHORT).show();
-		String provider = Settings.Secure.getString(this._Context.getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
-
-		if (!provider.contains("gps")) {//if gps is disabled
-			final Intent gpsintent = new Intent();
-			gpsintent.setClassName("com.android.settings", "com.android.settings.widget.SettingsAppWidgetProvider");
-			gpsintent.addCategory(Intent.CATEGORY_ALTERNATIVE);
-			gpsintent.setData(Uri.parse("3"));
-			this._Context.sendBroadcast(gpsintent);
-
-			/*Intent gpsintent = new Intent("android.location.GPS_ENABLED_CHANGE");
-	        gpsintent.putExtra("enabled", true);
-            this._Context.sendBroadcast(gpsintent);*/
-		}
-	}
-
-	private void turnGPSOff() {
-		Toast.makeText(this._Context.getApplicationContext(), "Attempting to disable GPS", Toast.LENGTH_SHORT).show();
-		String provider = Settings.Secure.getString(this._Context.getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
-
-		if (provider.contains("gps")) {//if gps is enabled
-			final Intent gpsintent = new Intent();
-			gpsintent.setClassName("com.android.settings", "com.android.settings.widget.SettingsAppWidgetProvider");
-			gpsintent.addCategory(Intent.CATEGORY_ALTERNATIVE);
-			gpsintent.setData(Uri.parse("3"));
-			this._Context.sendBroadcast(gpsintent);
-
-			/*Intent gpsintent = new Intent("android.location.GPS_ENABLED_CHANGE");
-			gpsintent.putExtra("enabled", false);
-			_Context.sendBroadcast(gpsintent);*/
-		}
 	}
 
 	public void updateWaitTime(int newTime) {
@@ -122,8 +84,4 @@ public class MyLocationListener implements LocationListener {
 	public Location getLastLocation() {
 		return this._lastLocation;
 	}
-
-	/*public String getProvider() {
-		return this._provider;
-	}*/
 }
