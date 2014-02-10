@@ -103,8 +103,6 @@ public class WebService {
 		if (this._isCharging) {
 			// How are we charging?
 			this._chargePlug = this._batteryStatus.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
-			//boolean usbCharge = this._chargePlug == BatteryManager.BATTERY_PLUGGED_USB;
-			//boolean acCharge = this._chargePlug == BatteryManager.BATTERY_PLUGGED_AC;
 			this._chargingHow = this._chargePlug == BatteryManager.BATTERY_PLUGGED_USB ? "USB" : (this._chargePlug == BatteryManager.BATTERY_PLUGGED_AC ? "AC" : "unknown");
 		} else {
 			this._chargingHow = "";
@@ -204,8 +202,6 @@ public class WebService {
 
 		int level = battery.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
 		int scale = battery.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
-		//Log.i(TAG, "BATTERY LEVEL: "+level);
-		//Log.i(TAG, "BATTERY SCALE: "+scale);
 
 		float batteryPercent = (level / (float) scale) * 100;
 		return batteryPercent;
@@ -227,6 +223,5 @@ public class WebService {
 			Log.e(TAG, e.getMessage());
 			Log.e(TAG, e.toString());
 		}
-		//this._wamd.updateWaitTime(10000);
 	}
 }
