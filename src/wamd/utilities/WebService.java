@@ -26,6 +26,7 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import wamd.main.WaMd;
 
 /**
@@ -134,6 +135,8 @@ public class WebService {
 			// Execute HTTP Post Request
 			Log.i(TAG, "Posting coords to " + this._url);
 			this._response = this._httpclient.execute(this._httppost);
+			String responseBody = EntityUtils.toString(this._response.getEntity());
+			Log.i(TAG, responseBody);
 
 			Log.i(TAG, "HTTP RESPONSE: " + this._response.getStatusLine().getStatusCode());
 			// if a bad response is returned, save the corrds to the local db
