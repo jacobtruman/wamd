@@ -4,6 +4,7 @@
     <!-- The local.properties file is created and updated by the 'android' tool.
          It contains the path to the SDK. It should *NOT* be checked into
          Version Control Systems. -->
+    <target name="help"></target>
     <property file="local.properties"/>
 
     <!-- The ant.properties file can be created by you. It is only edited by the
@@ -33,6 +34,7 @@
          This must be done before we load project.properties since
          the proguard config can use sdk.dir -->
     <property environment="env"/>
+    <property name="env.ANDROID_HOME" value=""/>
     <condition property="sdk.dir" value="${env.ANDROID_HOME}">
         <isset property="env.ANDROID_HOME"/>
     </condition>

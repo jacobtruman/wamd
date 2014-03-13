@@ -1,10 +1,12 @@
 package wamd.utilities;
 
+import android.annotation.TargetApi;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Build;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -53,6 +55,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		onCreate(db);
 	}
 
+	@TargetApi(Build.VERSION_CODES.GINGERBREAD)
 	public void addCoords(List<NameValuePair> postValues) {
 
 		this._db = this.getWritableDatabase();
