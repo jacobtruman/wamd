@@ -24,8 +24,8 @@ import wamd.listeners.MyLocationListener;
  */
 public class WaMd extends Service {
 	private String TAG = "WaMdMain";
-	private int _waitTime = 300000; // 5 min
-	//private int _waitTime = 60; // 10 seconds
+	private int _waitTime = 301000; // 5 min
+	//private int _waitTime = 5000; // 5 seconds
 	private int _minDist = 0;
 	private int _startId;
 	private LocationManager _locationManager;
@@ -42,7 +42,7 @@ public class WaMd extends Service {
 
 	@Override
 	public void onCreate() {
-		Log.i(TAG, "WAIT TIME: " + (this._waitTime / 60000) + " min");
+		Log.i(TAG, this._getWaitTimePretty());
 		this.locationListener = new MyLocationListener(this);
 		this._initializeLocationManager();
 
@@ -103,10 +103,9 @@ public class WaMd extends Service {
 	};
 
 	public void updateWaitTime(int newTime) {
-		if (this._waitTime != newTime) {
-			this._waitTime = newTime;
-			Log.i(TAG, "WAIT TIME: " + (this._waitTime / 60000) + " min");
-			Log.i(TAG, "WAIT TIME: " + this._waitTime + " sec");
+		if (this.getWaitTime() != newTime) {
+			this.setWaitTime(newTime);
+			Log.i(TAG, "CHANGING " + this._getWaitTimePretty());
 			this.locationListener.updateWaitTime(newTime);
 			this._restartService();
 		}
@@ -116,7 +115,7 @@ public class WaMd extends Service {
 		Log.i(TAG, "RESTARTING SERVICE");
 		this._locationManager.removeUpdates(this.locationListener);
 		for (int i = 0; i < this._providers.length; i++) {
-			this._locationManager.requestLocationUpdates(this._providers[i], this._waitTime, this._minDist, this.locationListener);
+			this._locationManager.requestLocationUpdates(this._providers[i], this.getWaitTime(), this._minDist, this.locationListener);
 		}
 	}
 
@@ -126,8 +125,21 @@ public class WaMd extends Service {
 
 	public void addUpdates(String provider) {
 		this._locationManager.requestLocationUpdates(
-				provider, this._waitTime, this._minDist,
+				provider, this.getWaitTime(), this._minDist,
 				this.locationListener);
+	}
+
+	private String _getWaitTimePretty() {
+		int wait_time = this.getWaitTime();
+		//5 * 60 * 1000 (5 minutes)
+		// 60000 = 1 min
+		// 1000 = 1 sec
+		int wait_min = wait_time / 60000;
+		int wait_sec = (wait_time - (wait_min * 60000)) / 1000;
+
+		String wait_string = "WAIT TIME: " + wait_min + " min " + wait_sec + " sec";
+
+		return wait_string;
 	}
 
 	public int getWaitTime() {

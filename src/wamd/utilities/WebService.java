@@ -9,10 +9,7 @@ import android.telephony.TelephonyManager;
 import android.text.format.DateFormat;
 import android.util.Log;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -27,6 +24,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONObject;
 import wamd.main.WaMd;
 
 /**
@@ -48,7 +46,6 @@ public class WebService {
 	private ArrayList<String> _fields = new ArrayList<String>();
 	private boolean _dbValues = false;
 	private HttpEntity _entity;
-	private InputStream _is;
 	private Intent _batteryStatus;
 	private IntentFilter _ifilter;
 	private int _chargingStatus;
@@ -127,55 +124,8 @@ public class WebService {
 		this._postValues.add(new BasicNameValuePair("charging", String.valueOf(this._isCharging)));
 		this._postValues.add(new BasicNameValuePair("charging_how", this._chargingHow));
 
-		// first try to upload the coords via http
-		try {
-			this._httppost = new HttpPost(this._url);
-			this._httppost.setEntity(new UrlEncodedFormEntity(this._postValues));
-
-			// Execute HTTP Post Request
-			Log.i(TAG, "Posting coords to " + this._url);
-			this._response = this._httpclient.execute(this._httppost);
-			String responseBody = EntityUtils.toString(this._response.getEntity());
-			Log.i(TAG, responseBody);
-
-			Log.i(TAG, "HTTP RESPONSE: " + this._response.getStatusLine().getStatusCode());
-			// if a bad response is returned, save the corrds to the local db
-			if (this._response.getStatusLine().getStatusCode() != 200) {
-				this._dbHelper.addCoords(this._postValues);
-				this._dbValues = true;
-			} else if (this._dbValues) {
-				// get any existing records in the local db and upload them
-				this._postValuesArray = this._dbHelper.listSelectAll();
-				Iterator postValuesIterator = this._postValuesArray.iterator();
-				while (postValuesIterator.hasNext()) {
-					this._postValues = (List) postValuesIterator.next();
-					this._httppost = new HttpPost(this._url);
-					this._httppost.setEntity(new UrlEncodedFormEntity(this._postValues));
-
-					// Execute HTTP Post Request
-					Log.i(TAG, "Posting coords to " + this._url);
-					this._response = this._httpclient.execute(this._httppost);
-				}
-				this._dbValues = false;
-			} else {
-				//Log.i(TAG, "RESPONSE TEXT: "+this._response.getEntity().getContent());
-				this._entity = this._response.getEntity();
-				this._is = this._entity.getContent();
-				this._processResponse();
-			}
-		}
-		// catch a client error here
-		catch (ClientProtocolException e) {
-			Log.e(TAG, "CLIENT ERROR: " + e.getMessage());
-			// save coords to local db on failure
-			this._dbHelper.addCoords(this._postValues);
-			this._dbValues = true;
-		} catch (IOException e) {
-			Log.e(TAG, "IO ERROR: " + e.getMessage());
-			// save coords to local db on failure
-			this._dbHelper.addCoords(this._postValues);
-			this._dbValues = true;
-		}
+		// process the http request
+		this._processHTTPRequest();
 
 		// update the UI
 		this._wamd.ChangeDisplayText("LAT: " + location.getLatitude() + "\nLON: " + location.getLongitude(), "coords_" + location.getProvider());
@@ -210,18 +160,81 @@ public class WebService {
 		return batteryPercent;
 	}
 
-	private void _processResponse() {
-		String result;
-		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(this._is, "iso-8859-1"), 8);
-			StringBuilder sb = new StringBuilder();
-			String line;
-			while ((line = reader.readLine()) != null) {
-				sb.append(line);
+	private void _processHTTPRequest() {
+		String responseString = "";
+		// first try to upload the coords via http
+		try{
+			this._httppost = new HttpPost(this._url);
+			this._httppost.setEntity(new UrlEncodedFormEntity(this._postValues));
+
+			// Execute HTTP Post Request
+			Log.i(TAG, "Posting coords to " + this._url);
+			this._response = this._httpclient.execute(this._httppost);
+			this._entity = this._response.getEntity();
+			responseString = EntityUtils.toString(this._entity);
+
+			try {
+				JSONObject json = new JSONObject(responseString);
+				String status = json.getString("status");
+				Log.i(TAG, "HTTP RESPONSE: " + this._response.getStatusLine().getStatusCode());
+				Log.d(TAG, "STATUS -> " + status);
+				// if a bad response is returned, save the coords to the local db
+				if (this._response.getStatusLine().getStatusCode() != 200 || !status.equals("SUCCESS")) {
+					Log.i(TAG, "Coordinate submission failed - saving to local DB");
+					this._dbHelper.addCoords(this._postValues);
+					this._dbValues = true;
+				} else if (this._dbValues) {
+					// get any existing records in the local db and upload them
+					this._postValuesArray = this._dbHelper.listSelectAll();
+					Iterator postValuesIterator = this._postValuesArray.iterator();
+					while (postValuesIterator.hasNext()) {
+						this._postValues = (List) postValuesIterator.next();
+						this._httppost = new HttpPost(this._url);
+						this._httppost.setEntity(new UrlEncodedFormEntity(this._postValues));
+
+						// Execute HTTP Post Request
+						Log.i(TAG, "Posting from DB");
+						this._dbValues = false;
+						this._processHTTPRequest();
+					}
+					this._dbValues = false;
+				} else {
+					Log.i(TAG, "Coordinate submission successful");
+				}
+				this._processResponse(responseString);
+			} catch (Exception e) {
+				// error here
 			}
-			this._is.close();
-			result = sb.toString();
-			Log.i(TAG, result);
+		} catch (ClientProtocolException e) { // catch a client error here
+			Log.e(TAG, "CLIENT ERROR: " + e.getMessage());
+			// save coords to local db on failure
+			this._dbHelper.addCoords(this._postValues);
+			this._dbValues = true;
+		} catch (IOException e) {
+			Log.e(TAG, "IO ERROR: " + e.getMessage());
+			// save coords to local db on failure
+			this._dbHelper.addCoords(this._postValues);
+			this._dbValues = true;
+		}
+	}
+
+	/**
+	 * This is where we take actions based on the http response
+	 */
+	private void _processResponse(String responseBody) {
+		try {
+			JSONObject json = new JSONObject(responseBody);
+			if(json.has("actions")) {
+				JSONObject actions = new JSONObject(json.getString("actions"));
+				if(actions.has("wait_time")) {
+					this._wamd.updateWaitTime(actions.getInt("wait_time"));
+				}
+				/*for(Iterator<String> iter = actions.keys();iter.hasNext();) {
+					String action = iter.next();
+					String value = actions.getString(action);
+					Log.i(TAG, "ACTION -> " + action + " -> " + value);
+				}*/
+			}
 		} catch (Exception e) {
 			Log.e(TAG, e.getMessage());
 			Log.e(TAG, e.toString());
