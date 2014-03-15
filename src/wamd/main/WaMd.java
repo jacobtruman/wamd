@@ -24,7 +24,7 @@ import wamd.listeners.MyLocationListener;
  */
 public class WaMd extends Service {
 	private String TAG = "WaMdMain";
-	private int _waitTime = 301000; // 5 min
+	private int _waitTime = 300000; // 5 min
 	//private int _waitTime = 5000; // 5 seconds
 	private int _minDist = 0;
 	private int _startId;
