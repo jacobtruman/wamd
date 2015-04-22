@@ -8,6 +8,7 @@ import android.os.BatteryManager;
 import android.telephony.TelephonyManager;
 import android.text.format.DateFormat;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -69,7 +70,8 @@ public class WebService {
 		this._fields.add("altitude");
 		this._fields.add("bearing");
 		this._fields.add("battery");
-		this._fields.add("location_time");
+		this._fields.add("location_timestamp");
+        this._fields.add("location_time");
 		this._fields.add("location_timezone");
 		this._fields.add("charging");
 		this._fields.add("charging_how");
@@ -92,6 +94,7 @@ public class WebService {
 		Log.i(TAG, "LAT: " + location.getLatitude());
 		Log.i(TAG, "LON: " + location.getLongitude());
 		Log.i(TAG, "DATE/TIME: " + DateFormat.format("yyyy-MM-dd kk:mm:ss", location.getTime()));
+		Log.i(TAG, "TIMESTAMP: " + location.getTime());
 
 		// Are we charging / charged?
 		this._chargingStatus = this._batteryStatus.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
@@ -119,7 +122,8 @@ public class WebService {
 		this._postValues.add(new BasicNameValuePair("altitude", String.valueOf(location.getAltitude())));
 		this._postValues.add(new BasicNameValuePair("bearing", String.valueOf(location.getBearing())));
 		this._postValues.add(new BasicNameValuePair("battery", String.valueOf(this._getBatterLevel())));
-		this._postValues.add(new BasicNameValuePair("location_time", String.valueOf(DateFormat.format("yyyy-MM-dd kk:mm:ss", location.getTime()))));
+		this._postValues.add(new BasicNameValuePair("location_timestamp", String.valueOf(location.getTime())));
+        this._postValues.add(new BasicNameValuePair("location_time", String.valueOf(DateFormat.format("yyyy-MM-dd kk:mm:ss", location.getTime()))));
 		this._postValues.add(new BasicNameValuePair("location_timezone", String.valueOf(DateFormat.format("zz", location.getTime()))));
 		this._postValues.add(new BasicNameValuePair("charging", String.valueOf(this._isCharging)));
 		this._postValues.add(new BasicNameValuePair("charging_how", this._chargingHow));
@@ -129,6 +133,7 @@ public class WebService {
 
 		// update the UI
 		this._wamd.ChangeDisplayText("LAT: " + location.getLatitude() + "\nLON: " + location.getLongitude(), "coords_" + location.getProvider());
+        this._wamd.ChangeDisplayText("LAST UPDATED: " + DateFormat.format("yyyy-MM-dd kk:mm:ss", location.getTime()), "date_" + location.getProvider());
 	}
 
 	private String _getDeviceId() {
@@ -161,7 +166,7 @@ public class WebService {
 	}
 
 	private void _processHTTPRequest() {
-		String responseString = "";
+		String msg = "";
 		// first try to upload the coords via http
 		try{
 			this._httppost = new HttpPost(this._url);
@@ -171,7 +176,7 @@ public class WebService {
 			Log.i(TAG, "Posting coords to " + this._url);
 			this._response = this._httpclient.execute(this._httppost);
 			this._entity = this._response.getEntity();
-			responseString = EntityUtils.toString(this._entity);
+            String responseString = EntityUtils.toString(this._entity);
 
 			try {
 				JSONObject json = new JSONObject(responseString);
@@ -180,7 +185,9 @@ public class WebService {
 				Log.d(TAG, "STATUS -> " + status);
 				// if a bad response is returned, save the coords to the local db
 				if (this._response.getStatusLine().getStatusCode() != 200 || !status.equals("SUCCESS")) {
-					Log.i(TAG, "Coordinate submission failed - saving to local DB");
+					msg = "Coordinate submission failed - saving to local DB";
+                    Log.i(TAG, msg);
+                    //Toast.makeText(this._Context.getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
 					this._dbHelper.addCoords(this._postValues);
 					this._dbValues = true;
 				} else if (this._dbValues) {
@@ -193,13 +200,17 @@ public class WebService {
 						this._httppost.setEntity(new UrlEncodedFormEntity(this._postValues));
 
 						// Execute HTTP Post Request
-						Log.i(TAG, "Posting from DB");
+						msg = "Posting from DB";
+                        Log.i(TAG, msg);
+                        Toast.makeText(this._Context.getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
 						this._dbValues = false;
 						this._processHTTPRequest();
 					}
 					this._dbValues = false;
 				} else {
-					Log.i(TAG, "Coordinate submission successful");
+                    msg = "Coordinate submission successful";
+					Log.i(TAG, msg);
+                    //Toast.makeText(this._Context.getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
 				}
 				this._processResponse(responseString);
 			} catch (Exception e) {

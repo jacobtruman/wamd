@@ -16,9 +16,16 @@
             android:id="@+id/coords_gps"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:paddingBottom="30px"
             android:gravity="center"
             android:text="Loading..."
+            />
+    <TextView
+            android:id="@+id/date_gps"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="30px"
+            android:gravity="center"
+            android:text=""
             />
     <TextView
             android:layout_width="fill_parent"
@@ -34,6 +41,13 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:text="Loading..."
+            />
+    <TextView
+            android:id="@+id/date_network"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text=""
             />
     <TextView
             android:id="@+id/author"

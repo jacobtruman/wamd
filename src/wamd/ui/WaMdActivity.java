@@ -18,8 +18,8 @@ import android.view.ViewGroup.LayoutParams;
 public class WaMdActivity extends Activity {
 	private Intent intent;
 	private String TAG = "WaMdActivity";
-	private String[] textViews = {"coords_gps", "coords_network"};
-	private int[] textViewInts = {R.id.coords_gps, R.id.coords_network};
+	private String[] textViews = {"coords_gps", "date_gps", "coords_network", "date_network"};
+	private int[] textViewInts = {R.id.coords_gps, R.id.date_gps, R.id.coords_network, R.id.date_network};
 
 	// Called when the activity is first created
 	@Override

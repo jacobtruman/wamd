@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="module_wamd" default="compile.module.wamd">
+  <dirname property="module.wamd.basedir" file="${ant.file.module_wamd}"/>
+  
+  <property name="module.jdk.home.wamd" value="${project.jdk.home}"/>
+  <property name="module.jdk.bin.wamd" value="${project.jdk.bin}"/>
+  <property name="module.jdk.classpath.wamd" value="${project.jdk.classpath}"/>
+  
+  <property name="compiler.args.wamd" value="-encoding UTF-8 -source 1.6 ${compiler.args}"/>
+  
+  <property name="wamd.output.dir" value="${module.wamd.basedir}/out/production/wamd"/>
+  <property name="wamd.testoutput.dir" value="${module.wamd.basedir}/out/test/wamd"/>
+  
+  <path id="wamd.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="wamd.module.production.classpath">
+    <path refid="${module.jdk.classpath.wamd}"/>
+  </path>
+  
+  <path id="wamd.runtime.production.module.classpath">
+    <pathelement location="${wamd.output.dir}"/>
+  </path>
+  
+  <path id="wamd.module.classpath">
+    <path refid="${module.jdk.classpath.wamd}"/>
+    <pathelement location="${wamd.output.dir}"/>
+  </path>
+  
+  <path id="wamd.runtime.module.classpath">
+    <pathelement location="${wamd.testoutput.dir}"/>
+    <pathelement location="${wamd.output.dir}"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.wamd">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.wamd">
+    <patternset refid="excluded.from.module.wamd"/>
+  </patternset>
+  
+  <path id="wamd.module.sourcepath">
+    <dirset dir="${module.wamd.basedir}">
+      <include name="src"/>
+      <include name="gen"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.wamd" depends="compile.module.wamd.production,compile.module.wamd.tests" description="Compile module wamd"/>
+  
+  <target name="compile.module.wamd.production" depends="register.custom.compilers" description="Compile module wamd; production classes">
+    <mkdir dir="${wamd.output.dir}"/>
+    <javac2 destdir="${wamd.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.wamd}/javac">
+      <compilerarg line="${compiler.args.wamd}"/>
+      <bootclasspath refid="wamd.module.bootclasspath"/>
+      <classpath refid="wamd.module.production.classpath"/>
+      <src refid="wamd.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.wamd"/>
+    </javac2>
+    
+    <copy todir="${wamd.output.dir}">
+      <fileset dir="${module.wamd.basedir}/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+      <fileset dir="${module.wamd.basedir}/gen">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.wamd.tests" depends="register.custom.compilers,compile.module.wamd.production" description="compile module wamd; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.wamd" description="cleanup module">
+    <delete dir="${wamd.output.dir}"/>
+    <delete dir="${wamd.testoutput.dir}"/>
+  </target>
+</project>
