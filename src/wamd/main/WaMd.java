@@ -16,7 +16,6 @@ import wamd.listeners.MyLocationListener;
 /*
  * TODO setup app key
  * TODO accept disable signal from http response
- * TODO set timeout for GPS check ?? not sure I need this anymore
  */
 
 /**
@@ -32,7 +31,7 @@ public class WaMd extends Service {
 	private MyLocationListener locationListener;
 	public static final String BROADCAST_ACTION = "wamd.displayevent";
 	private final Handler handler = new Handler();
-	private String[] _providers = {LocationManager.NETWORK_PROVIDER, LocationManager.GPS_PROVIDER};
+	private String[] _providers = {LocationManager.GPS_PROVIDER, LocationManager.NETWORK_PROVIDER, LocationManager.PASSIVE_PROVIDER};
 	Intent intent;
 
 	//@Override
@@ -46,13 +45,16 @@ public class WaMd extends Service {
 		this.locationListener = new MyLocationListener(this);
 		this._initializeLocationManager();
 
-		for (int i = 0; i < this._providers.length; i++) {
+		for (String _provider : this._providers) {
 			try {
-				this.addUpdates(this._providers[i]);
-			} catch (java.lang.SecurityException ex) {
+				Log.i(TAG, "Adding updates for provider: " + _provider);
+				this.addUpdates(_provider);
+				Log.i(TAG, "Initial location provider check: " + _provider);
+				this._locationManager.requestSingleUpdate(_provider, this.locationListener, null);
+			} catch (SecurityException ex) {
 				Log.i(TAG, "fail to request location update, ignore", ex);
 			} catch (IllegalArgumentException ex) {
-				Log.d(TAG, this._providers[i] + " provider does not exist, " + ex.getMessage());
+				Log.d(TAG, _provider + " provider does not exist, " + ex.getMessage());
 			}
 		}
 
@@ -114,8 +116,8 @@ public class WaMd extends Service {
 	private void _restartService() {
 		Log.i(TAG, "RESTARTING SERVICE");
 		this._locationManager.removeUpdates(this.locationListener);
-		for (int i = 0; i < this._providers.length; i++) {
-			this._locationManager.requestLocationUpdates(this._providers[i], this.getWaitTime(), this._minDist, this.locationListener);
+		for (String _provider : this._providers) {
+			this._locationManager.requestLocationUpdates(_provider, this.getWaitTime(), this._minDist, this.locationListener);
 		}
 	}
 
@@ -137,9 +139,11 @@ public class WaMd extends Service {
 		int wait_min = wait_time / 60000;
 		int wait_sec = (wait_time - (wait_min * 60000)) / 1000;
 
-		String wait_string = "WAIT TIME: " + wait_min + " min " + wait_sec + " sec";
+		return "WAIT TIME: " + wait_min + " min " + wait_sec + " sec";
+	}
 
-		return wait_string;
+	public LocationManager getLocationManager() {
+		return this._locationManager;
 	}
 
 	public int getWaitTime() {

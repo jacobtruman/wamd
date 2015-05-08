@@ -10,7 +10,6 @@ import android.os.Build;
 import android.util.Log;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.http.NameValuePair;
@@ -39,9 +38,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		Log.i(TAG, "Creating Table " + tableName);
 		String fields = "id INTEGER PRIMARY KEY AUTOINCREMENT";
 
-		Iterator fields_iterator = this._fields.iterator();
-		while (fields_iterator.hasNext()) {
-			fields += ", " + fields_iterator.next() + " VARCHAR(25)";
+		for (Object _field : this._fields) {
+			fields += ", " + _field + " VARCHAR(25)";
 		}
 		String sql = "CREATE TABLE " + tableName;
 		Log.i(TAG, sql + "(" + fields + ")");
@@ -63,9 +61,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 		ContentValues cv = new ContentValues();
 
 		NameValuePair temp;
-		Iterator<NameValuePair> postIterator = postValues.iterator();
-		while (postIterator.hasNext()) {
-			temp = postIterator.next();
+		for (NameValuePair postValue : postValues) {
+			temp = postValue;
 			if (this._nullField.isEmpty())
 				this._nullField = temp.getName();
 			cv.put(temp.getName(), temp.getValue());
@@ -84,9 +81,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	public List<List> listSelectAll() {
 		this._db = this.getWritableDatabase();
 		String fields = "id";
-		Iterator fields_iterator = this._fields.iterator();
-		while (fields_iterator.hasNext()) {
-			fields += ", " + fields_iterator.next();
+		for (Object _field : this._fields) {
+			fields += ", " + _field;
 		}
 		List<NameValuePair> list;
 		List<List> list_array = new ArrayList<List>();
@@ -113,7 +109,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 			}
 			while (cursor.moveToNext());
 		}
-		if (cursor != null && !cursor.isClosed()) {
+		if (!cursor.isClosed()) {
 			cursor.close();
 		}
 		this._db.close();

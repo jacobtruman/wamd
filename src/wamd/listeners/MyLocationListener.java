@@ -66,6 +66,8 @@ public class MyLocationListener implements LocationListener {
 	@Override
 	public void onProviderEnabled(String provider) {
 		Toast.makeText(this._Context.getApplicationContext(), provider + " Enabled", Toast.LENGTH_SHORT).show();
+		Log.i(TAG, "Requesting single location provider check: " + provider);
+		this._wamd.getLocationManager().requestSingleUpdate(provider, this, null);
 	}
 
 	@Override

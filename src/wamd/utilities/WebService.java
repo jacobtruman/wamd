@@ -12,7 +12,6 @@ import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.http.HttpEntity;
@@ -158,6 +157,7 @@ public class WebService {
 	private float _getBatterLevel() {
 		Intent battery = this._Context.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
 
+		assert battery != null;
 		int level = battery.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
 		int scale = battery.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
 
@@ -166,7 +166,7 @@ public class WebService {
 	}
 
 	private void _processHTTPRequest() {
-		String msg = "";
+		String msg;
 		// first try to upload the coords via http
 		try{
 			this._httppost = new HttpPost(this._url);
@@ -193,16 +193,15 @@ public class WebService {
 				} else if (this._dbValues) {
 					// get any existing records in the local db and upload them
 					this._postValuesArray = this._dbHelper.listSelectAll();
-					Iterator postValuesIterator = this._postValuesArray.iterator();
-					while (postValuesIterator.hasNext()) {
-						this._postValues = (List) postValuesIterator.next();
+					for (List<NameValuePair> a_postValuesArray : this._postValuesArray) {
+						this._postValues = a_postValuesArray;
 						this._httppost = new HttpPost(this._url);
 						this._httppost.setEntity(new UrlEncodedFormEntity(this._postValues));
 
 						// Execute HTTP Post Request
 						msg = "Posting from DB";
-                        Log.i(TAG, msg);
-                        Toast.makeText(this._Context.getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
+						Log.i(TAG, msg);
+						Toast.makeText(this._Context.getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
 						this._dbValues = false;
 						this._processHTTPRequest();
 					}
